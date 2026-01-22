@@ -58,10 +58,19 @@ def save_json(file_name, data):
 
 def is_banned(uid):
     return str(uid) in load_json(BAN_FILE)
-
 # --- 3. CALLBACK HANDLER ---
 async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
+    data = query.data
+    # TAMBAHKAN INI:
+    if data.startswith("rep_"):
+        _, cid, mid = data.split("_")
+        context.user_data['rep_chat_id'] = int(cid)
+        context.user_data['rep_msg_id'] = int(mid)
+        await query.message.reply_text("📝 <b>Mode Balas Anonim Aktif!</b>\nSilakan kirim pesan balasan Anda (teks/media). Balasan akan terkirim secara anonim ke grup diskusi.")
+        return await query.answer()
+    # ... sisa kode handle_callback asli Anda ...
+    if query.from_user.id != OWNER_ID: return
     if query.from_user.id != OWNER_ID: return
     data = query.data
 
@@ -78,14 +87,12 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         save_json(CONFIG_FILE, cfg)
         await query.answer("✅ Template berhasil direset!", show_alert=True)
         await query.message.reply_text("✨ <b>RESET BERHASIL!</b>\nTemplate menfess telah dikembalikan ke pengaturan awal.", parse_mode=ParseMode.HTML)
-
     elif data.startswith("unban_"):
         uid = data.split("_")[1]
         banned = load_json(BAN_FILE)
         if uid in banned: banned.remove(uid); save_json(BAN_FILE, banned)
         await query.answer("Ban User Dicabut!")
         await query.edit_message_caption(caption=query.message.caption + "\n\n✅ <b>STATUS: AKTIF</b>", parse_mode=ParseMode.HTML)
-
     elif data.startswith("delclone_"):
         try:
             idx = int(data.split("_")[1])
@@ -98,13 +105,11 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 save_json(CLONE_DB, clones)
                 await query.edit_message_text(f"✅ Bot <b>@{removed.get('username')}</b> berhasil dimatikan dan dihapus.", parse_mode=ParseMode.HTML)
         except: await query.answer("Gagal menghapus clone")
-
     elif data.startswith("count_"):
         _, tid, val = data.split("_")
         val = max(1, int(val))
         kb = InlineKeyboardMarkup([[InlineKeyboardButton("➖", callback_data=f"count_{tid}_{val-1}"), InlineKeyboardButton(f"💎 {val}", callback_data="n"), InlineKeyboardButton("➕", callback_data=f"count_{tid}_{val+1}")], [InlineKeyboardButton("✅ KONFIRMASI", callback_data=f"acc_{tid}_{val}")]])
         await query.edit_message_reply_markup(reply_markup=kb)
-
     elif data.startswith("acc_"):
         _, tid, val = data.split("_")
         db_user = load_json(USER_DATA_FILE)
@@ -114,32 +119,25 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_caption(caption=query.message.caption + f"\n\n✅ <b>BERHASIL +{val}</b>")
         try: await context.bot.send_message(tid, f"✅ Pembayaran diterima! +{val} kuota ditambahkan.")
         except: pass
-
     elif data == "cp_tpl":
         context.user_data['edit_mode'] = 'template'
         await query.message.reply_text("📝 Kirim template baru.\nGunakan {TEXT} untuk kolom teks kiriman & {SENDER} untuk menampilkan pengirim.\nbot ini support html format")
-
     elif data == "cp_ch":
         context.user_data['edit_mode'] = 'channel'
         await query.message.reply_text("📢 Kirim username channel baru (@Channel) atau ID Channel (-100xxx).")
-
     await query.answer()
-
 # --- 4. NOTIFIKASI KOMENTAR ---
 async def handle_comments(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.effective_chat or update.effective_chat.type not in [ChatType.GROUP, ChatType.SUPERGROUP]: return
     if not update.message or not update.message.reply_to_message: return
     if update.message.text and update.message.text.startswith('/'): return
-
     msg_reply = update.message.reply_to_message
     original_msg_id = None
     if msg_reply.forward_origin:
         original_msg_id = getattr(msg_reply.forward_origin, 'message_id', None)
     if not original_msg_id: return
-
     post_map = load_json(POST_MAP_FILE)
     sender_id = post_map.get(str(original_msg_id))
-
     if sender_id:
         try:
             cfg = load_json(CONFIG_FILE)
@@ -150,16 +148,26 @@ async def handle_comments(update: Update, context: ContextTypes.DEFAULT_TYPE):
             link_komentar = f"https://t.me/c/{chat_id_clean}/{comment_id}?thread={thread_id}"
             target_clean = str(target).replace('-100', '').replace('@', '')
             link_asli = f"https://t.me/c/{target_clean}/{original_msg_id}"
-            kb = InlineKeyboardMarkup([[InlineKeyboardButton("💬 Lihat Komentar", url=link_komentar)], [InlineKeyboardButton("📝 Postingan Asli ↗️", url=link_asli)]])
+            kb = InlineKeyboardMarkup([
+    [InlineKeyboardButton("💬 Balas Anonim", callback_data=f"rep_{update.effective_chat.id}_{update.message.message_id}")],
+    [InlineKeyboardButton("💬 Lihat Komentar", url=link_komentar)],
+    [InlineKeyboardButton("📝 Postingan Asli ↗️", url=link_asli)]
+])
             await context.bot.send_message(chat_id=sender_id, text=f"🔔 <b>Notifikasi!</b>\nSeseorang baru saja mengomentari Menfess Anda.", reply_markup=kb, parse_mode=ParseMode.HTML)
         except Exception as e:
             print(f"Error Notif: {e}")
-
 # --- 5. HANDLING PESAN UTAMA ---
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.effective_user or not update.message: return
     if update.effective_chat.type != ChatType.PRIVATE: return
-
+    if context.user_data.get('rep_chat_id'):
+        target_chat = context.user_data.pop('rep_chat_id')
+        target_msg = context.user_data.pop('rep_msg_id')
+        try:
+            await update.message.copy(chat_id=target_chat, reply_to_message_id=target_msg)
+            return await update.message.reply_text("✅ Balasan anonim Anda telah terkirim ke grup!")
+        except Exception as e:
+            return await update.message.reply_text(f"❌ Gagal mengirim balasan: {e}")
     uid_int = update.effective_user.id
     uid = str(uid_int)
     msg = update.message
