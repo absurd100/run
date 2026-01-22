@@ -322,7 +322,7 @@ def main():
     app.add_handler(CallbackQueryHandler(handle_callback))
     app.add_handler(MessageHandler(filters.ChatType.GROUPS & (~filters.COMMAND), handle_comments))
     app.add_handler(MessageHandler(filters.ChatType.PRIVATE & (~filters.COMMAND), handle_message))
-    logging.info("Bot Berjalan..."); app.run_polling()
+    logging.info("Bot Berjalan... ok"); app.run_polling()
 
 if __name__ == '__main__':
     main()
