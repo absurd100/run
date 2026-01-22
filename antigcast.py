@@ -244,7 +244,7 @@ async def main():
     await setup_db()
     asyncio.create_task(delete_worker())
     await app.start()
-    print("🚀 Bot Antispam is RUNNING! gass")
+    print("🚀gass")
     await idle()
 
 if __name__ == "__main__":
