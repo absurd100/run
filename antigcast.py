@@ -4,9 +4,9 @@ import os
 import asyncio
 import threading
 import dns.resolver
-# Tambahkan baris ini untuk memperbaiki error di Termux
+# anu Tambahkan baris ini untuk memperbaiki error di Termux
 dns.resolver.default_resolver = dns.resolver.Resolver(configure=False)
-dns.resolver.default_resolver.nameservers = ['8.8.8.8', '8.8.4.4']
+dns.resolver.default_resolver.nameservers = ['223.5.5.5', '223.6.6.6']
 
 #import datetime
 import hashlib
