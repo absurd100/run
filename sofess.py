@@ -11,7 +11,7 @@ from telegram.ext import (
 from telegram.constants import ParseMode, ChatType
 
 # --- 1. KONFIGURASI UTAMA x---
-TOKEN = os.getenv("BOT_TOKEN", '8412972026:AAHkUMziUGDo__JGGoQUf8bKKnazX4P-sV8')
+TOKEN = os.getenv("BOT_TOKEN", '8395663507:AAH0Q7tUFxt28b4OxWmCM2y46Fh4Rykymn4')
 DEFAULT_CHANNEL = os.getenv("CH_ID", '@GALLERY_TPV')
 MAIN_OWNER_ID = 7411619973
 OWNER_ID = int(os.getenv("OWN_ID", MAIN_OWNER_ID))
