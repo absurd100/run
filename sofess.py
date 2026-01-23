@@ -30,7 +30,7 @@ POST_MAP_FILE = "post_mapping.json"
 DEFAULT_TEMPLATE = "✨ <b>𝐍𝐄𝐖 𝐌𝐄𝐍𝐅𝐄𝐒𝐒!</b> ✨\n\n<blockquote>{TEXT}</blockquote>\n\n• <b>Sender:</b> {SENDER}\n<b>• Via :</b> {BOT_LINK}"
 
 # --- KEYBOARD ---
-MAIN_KEYBOARD = ReplyKeyboardMarkup([['👤 Kirim Anonim', '📝 Tampilkan Nama'], ['💳 Isi Kuota (Bayar)', '📊 Cek Kuota'], ['🤖 CLONE', '🇮🇩 ADMIN MENU']], resize_keyboard=True)
+MAIN_KEYBOARD = ReplyKeyboardMarkup([['👤 Kirim Anonim', '📝 Tampilkan Nama'], ['💳 Isi Kuota (Bayar)', '📊 Cek Kuota'], ['🇮🇩 ADMIN MENU']], resize_keyboard=True)
 OWNER_KEYBOARD = ReplyKeyboardMarkup([['⚙️ CUSTOM POST', '📢 BROADCAST'], ['🔓 MODE GRATIS', '🔒 MODE BAYAR'], ['🖼️ SET QRIS', '👤 MENU USER'], ['📋 LIST CLONE']], resize_keyboard=True)
 CLONE_ADMIN_KEYBOARD = ReplyKeyboardMarkup([
     ['⚙️ CUSTOM POST', '📢 BROADCAST'],
